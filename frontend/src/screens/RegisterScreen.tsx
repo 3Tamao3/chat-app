@@ -49,7 +49,7 @@ export default function RegisterScreen({ navigation }: Props) {
       />
       <Button title="Register" onPress={handleRegister} />
       <Text style={styles.link} onPress={() => navigation.navigate('Login')}>
-        Already have an account? Login
+        Login Here!
       </Text>
     </View>
   );

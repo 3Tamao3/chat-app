@@ -41,7 +41,7 @@ export default function LoginScreen({ navigation }: Props) {
       />
       <Button title="Login" onPress={handleLogin} />
       <Text style={styles.link} onPress={() => navigation.navigate('Register')}>
-        Don't have an account? Register
+        Register Here!
       </Text>
     </View>
   );
