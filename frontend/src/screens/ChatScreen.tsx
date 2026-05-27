@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -63,10 +63,10 @@ export default function ChatScreen({ route }: Props) {
     };
   }, [chatId]);
 
-  const send = async () => {
-    if (!text.trim()) return;
+  const send = () => {
+    if (!text.trim() || !socketRef.current) return;
     const encrypted = encrypt(text, chatId);
-    await client.post('/messages/send', { chatId, content: encrypted });
+    socketRef.current.emit('sendMessage', { chatId, senderId: myId, content: encrypted });
     setText('');
   };
 
