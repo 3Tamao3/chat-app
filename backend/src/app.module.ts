@@ -9,7 +9,14 @@ import { MessagesModule } from './messages/messages.module';
 import { ChatModule } from './chat/chat.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, UsersModule, ChatsModule, MessagesModule, ChatModule],
+  imports: [
+    PrismaModule,
+    AuthModule,
+    UsersModule,
+    ChatsModule,
+    MessagesModule,
+    ChatModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
