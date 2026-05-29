@@ -3,7 +3,7 @@ import {
   View,
   Text,
   TextInput,
-  Button,
+  TouchableOpacity,
   FlatList,
   StyleSheet,
   KeyboardAvoidingView,
@@ -15,6 +15,7 @@ import client from '../api/client';
 import { getToken } from '../utils/storage';
 import { jwtDecode } from 'jwt-decode';
 import { encrypt, decrypt } from '../utils/crypto';
+import { useTheme } from '../theme/ThemeContext';
 import type { RootStackParamList } from '../../App';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ChatScreen'>;
@@ -27,6 +28,9 @@ type Message = {
 };
 
 export default function ChatScreen({ route }: Props) {
+  const { theme } = useTheme();
+  const s = makeStyles(theme);
+
   const { chatId, otherUsername: _otherUsername } = route.params;
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState('');
@@ -72,7 +76,7 @@ export default function ChatScreen({ route }: Props) {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={s.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={90}
     >
@@ -80,38 +84,58 @@ export default function ChatScreen({ route }: Props) {
         data={messages}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <View
-            style={[
-              styles.bubble,
-              item.senderId === myId ? styles.mine : styles.theirs,
-            ]}
-          >
-            <Text style={[styles.bubbleText, item.senderId === myId && styles.bubbleTextMine]}>
+          <View style={[s.bubble, item.senderId === myId ? s.mine : s.theirs]}>
+            <Text style={[s.bubbleText, item.senderId === myId ? s.bubbleTextMine : s.bubbleTextTheirs]}>
               {item.content}
             </Text>
           </View>
         )}
       />
-      <View style={styles.inputRow}>
+      <View style={s.inputRow}>
         <TextInput
-          style={styles.input}
+          style={s.input}
           value={text}
           onChangeText={setText}
           placeholder="Message"
+          placeholderTextColor={theme.placeholder}
         />
-        <Button title="Send" onPress={send} />
+        <TouchableOpacity style={s.sendButton} onPress={send}>
+          <Text style={s.sendButtonText}>Send</Text>
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  bubble: { margin: 8, padding: 10, borderRadius: 12, maxWidth: '75%' },
-  mine: { backgroundColor: '#007AFF', alignSelf: 'flex-end' },
-  theirs: { backgroundColor: '#eee', alignSelf: 'flex-start' },
-  bubbleText: { color: '#000' },
-  bubbleTextMine: { color: '#fff' },
-  inputRow: { flexDirection: 'row', padding: 8, alignItems: 'center', borderTopWidth: 1, borderColor: '#eee' },
-  input: { flex: 1, borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, marginRight: 8 },
-});
+function makeStyles(theme: ReturnType<typeof useTheme>['theme']) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: theme.background },
+    bubble: { margin: 8, padding: 10, borderRadius: 12, maxWidth: '75%' },
+    mine: { backgroundColor: theme.bubbleMine, alignSelf: 'flex-end' },
+    theirs: { backgroundColor: theme.bubbleTheirs, alignSelf: 'flex-start' },
+    bubbleText: { fontSize: 15 },
+    bubbleTextMine: { color: theme.bubbleTextMine },
+    bubbleTextTheirs: { color: theme.bubbleTextTheirs },
+    inputRow: {
+      flexDirection: 'row',
+      padding: 8,
+      alignItems: 'center',
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.border,
+      backgroundColor: theme.card,
+    },
+    input: {
+      flex: 1,
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: 20,
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+      marginRight: 8,
+      color: theme.text,
+      backgroundColor: theme.inputBackground,
+    },
+    sendButton: { backgroundColor: theme.primary, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8 },
+    sendButtonText: { color: '#fff', fontWeight: '600' },
+  });
+}

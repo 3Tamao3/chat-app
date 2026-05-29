@@ -7,7 +7,6 @@ import {
   StyleSheet,
   TextInput,
   Alert,
-  Button,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -15,6 +14,7 @@ import client from '../api/client';
 import { getToken } from '../utils/storage';
 import { jwtDecode } from 'jwt-decode';
 import { decrypt } from '../utils/crypto';
+import { useTheme } from '../theme/ThemeContext';
 import type { RootStackParamList } from '../../App';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
@@ -29,6 +29,8 @@ type Chat = {
 type User = { id: string; username: string };
 
 export default function ChatListScreen() {
+  const { theme } = useTheme();
+  const s = makeStyles(theme);
   const navigation = useNavigation<Nav>();
   const [chats, setChats] = useState<Chat[]>([]);
   const [myId, setMyId] = useState('');
@@ -76,22 +78,25 @@ export default function ChatListScreen() {
     chat.user1.id === myId ? chat.user2 : chat.user1;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.searchRow}>
+    <View style={s.container}>
+      <View style={s.searchRow}>
         <TextInput
-          style={styles.searchInput}
+          style={s.searchInput}
           placeholder="Search users..."
+          placeholderTextColor={theme.placeholder}
           value={search}
           onChangeText={setSearch}
         />
-        <Button title="Search" onPress={handleSearch} />
+        <TouchableOpacity style={s.searchButton} onPress={handleSearch}>
+          <Text style={s.searchButtonText}>Search</Text>
+        </TouchableOpacity>
       </View>
 
       {results.length > 0 && (
-        <View style={styles.results}>
+        <View style={s.results}>
           {results.map((u) => (
-            <TouchableOpacity key={u.id} style={styles.resultRow} onPress={() => startChat(u)}>
-              <Text>{u.username}</Text>
+            <TouchableOpacity key={u.id} style={s.resultRow} onPress={() => startChat(u)}>
+              <Text style={s.resultText}>{u.username}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -104,7 +109,7 @@ export default function ChatListScreen() {
           const other = getOther(item);
           return (
             <TouchableOpacity
-              style={styles.row}
+              style={s.row}
               onPress={() =>
                 navigation.navigate('ChatScreen', {
                   chatId: item.id,
@@ -112,8 +117,8 @@ export default function ChatListScreen() {
                 })
               }
             >
-              <Text style={styles.name}>{other.username}</Text>
-              <Text style={styles.last}>{item.lastMessage ? (decrypt(item.lastMessage, item.id) || item.lastMessage) : 'No messages yet'}</Text>
+              <Text style={s.name}>{other.username}</Text>
+              <Text style={s.last}>{item.lastMessage ? (decrypt(item.lastMessage, item.id) || item.lastMessage) : 'No messages yet'}</Text>
             </TouchableOpacity>
           );
         }}
@@ -122,13 +127,27 @@ export default function ChatListScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16 },
-  searchRow: { flexDirection: 'row', marginBottom: 8, alignItems: 'center' },
-  searchInput: { flex: 1, borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, marginRight: 8 },
-  results: { backgroundColor: '#f9f9f9', borderRadius: 8, marginBottom: 8 },
-  resultRow: { padding: 12, borderBottomWidth: 1, borderColor: '#eee' },
-  row: { paddingVertical: 14, borderBottomWidth: 1, borderColor: '#eee' },
-  name: { fontSize: 16, fontWeight: '600' },
-  last: { color: '#888', marginTop: 2 },
-});
+function makeStyles(theme: ReturnType<typeof useTheme>['theme']) {
+  return StyleSheet.create({
+    container: { flex: 1, padding: 16, backgroundColor: theme.background },
+    searchRow: { flexDirection: 'row', marginBottom: 8, alignItems: 'center' },
+    searchInput: {
+      flex: 1,
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: 8,
+      padding: 10,
+      marginRight: 8,
+      color: theme.text,
+      backgroundColor: theme.inputBackground,
+    },
+    searchButton: { backgroundColor: theme.primary, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10 },
+    searchButtonText: { color: '#fff', fontWeight: '600' },
+    results: { backgroundColor: theme.card, borderRadius: 8, marginBottom: 8 },
+    resultRow: { padding: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: theme.border },
+    resultText: { color: theme.text },
+    row: { paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: theme.border },
+    name: { fontSize: 16, fontWeight: '600', color: theme.text },
+    last: { color: theme.subtext, marginTop: 2 },
+  });
+}

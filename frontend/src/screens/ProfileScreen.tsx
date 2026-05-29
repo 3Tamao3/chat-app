@@ -8,11 +8,24 @@ import {
   Alert,
   ScrollView,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import client from '../api/client';
+import { useTheme } from '../theme/ThemeContext';
+import { themes, type ThemeName } from '../theme/themes';
+
+const THEME_OPTIONS: { name: ThemeName; label: string; preview: string }[] = [
+  { name: 'light',    label: 'Light',     preview: '#f2f2f7' },
+  { name: 'dark',     label: 'Dark',      preview: '#1c1c1e' },
+  { name: 'darkBlue', label: 'Dark Blue', preview: '#17212b' },
+  { name: 'green',    label: 'Green',     preview: '#111b21' },
+];
 
 export default function ProfileScreen() {
+  const { theme, setTheme } = useTheme();
+  const s = makeStyles(theme);
+
   const [username, setUsername] = useState('');
   const [newUsername, setNewUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -20,6 +33,7 @@ export default function ProfileScreen() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
+  const [themePickerOpen, setThemePickerOpen] = useState(false);
 
   useEffect(() => {
     client.get('/users/me').then((res) => {
@@ -55,98 +69,159 @@ export default function ProfileScreen() {
 
   if (fetching) {
     return (
-      <SafeAreaView style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#007AFF" />
+      <SafeAreaView style={[s.safe, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <Text style={styles.title}>Profile</Text>
+    <SafeAreaView style={s.safe} edges={['top']}>
+      <ScrollView contentContainerStyle={s.container} keyboardShouldPersistTaps="handled">
+        <Text style={s.title}>Profile</Text>
 
-        <View style={styles.card}>
-          <Text style={styles.label}>Username</Text>
+        {/* Account fields */}
+        <View style={s.card}>
+          <Text style={s.label}>Username</Text>
           <TextInput
-            style={styles.input}
+            style={s.input}
             value={newUsername}
             onChangeText={setNewUsername}
             autoCapitalize="none"
             placeholder="Username"
-            placeholderTextColor="#aaa"
+            placeholderTextColor={theme.placeholder}
           />
-
-          <Text style={styles.label}>Email</Text>
+          <Text style={s.label}>Email</Text>
           <TextInput
-            style={styles.input}
+            style={s.input}
             value={newEmail}
             onChangeText={setNewEmail}
             autoCapitalize="none"
             keyboardType="email-address"
             placeholder="Email"
-            placeholderTextColor="#aaa"
+            placeholderTextColor={theme.placeholder}
           />
-
-          <Text style={styles.label}>New Password</Text>
+          <Text style={s.label}>New Password</Text>
           <TextInput
-            style={styles.input}
+            style={s.input}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
             placeholder="Leave blank to keep current"
-            placeholderTextColor="#aaa"
+            placeholderTextColor={theme.placeholder}
           />
         </View>
 
         <TouchableOpacity
-          style={[styles.saveButton, loading && styles.saveButtonDisabled]}
+          style={[s.saveButton, loading && s.saveButtonDisabled]}
           onPress={save}
           disabled={loading}
         >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.saveButtonText}>Save Changes</Text>
-          )}
+          {loading
+            ? <ActivityIndicator color="#fff" />
+            : <Text style={s.saveButtonText}>Save Changes</Text>}
+        </TouchableOpacity>
+
+        {/* Theme picker */}
+        <Text style={s.sectionTitle}>Appearance</Text>
+        <TouchableOpacity style={s.card} onPress={() => setThemePickerOpen(true)} activeOpacity={0.7}>
+          <View style={s.themeRow}>
+            <View>
+              <Text style={s.themeRowLabel}>Theme</Text>
+              <Text style={s.themeRowValue}>{themes[theme.name].label}</Text>
+            </View>
+            <View style={[s.themePreviewDot, { backgroundColor: THEME_OPTIONS.find(t => t.name === theme.name)?.preview }]} />
+          </View>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Theme picker modal */}
+      <Modal visible={themePickerOpen} transparent animationType="fade" onRequestClose={() => setThemePickerOpen(false)}>
+        <TouchableOpacity style={s.modalBackdrop} activeOpacity={1} onPress={() => setThemePickerOpen(false)}>
+          <View style={s.modalSheet}>
+            <Text style={s.modalTitle}>Choose Theme</Text>
+            {THEME_OPTIONS.map((opt) => {
+              const active = theme.name === opt.name;
+              return (
+                <TouchableOpacity
+                  key={opt.name}
+                  style={[s.themeOption, active && s.themeOptionActive]}
+                  onPress={() => { setTheme(opt.name); setThemePickerOpen(false); }}
+                >
+                  <View style={[s.optionDot, { backgroundColor: opt.preview }]} />
+                  <Text style={[s.optionLabel, active && { color: theme.primary, fontWeight: '700' }]}>
+                    {opt.label}
+                  </Text>
+                  {active && <Text style={[s.checkmark, { color: theme.primary }]}>✓</Text>}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#f2f2f7' },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  container: { padding: 24 },
-  title: { fontSize: 28, fontWeight: '700', marginBottom: 24, color: '#000' },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  label: { fontSize: 13, fontWeight: '600', color: '#666', marginBottom: 6, marginTop: 12 },
-  input: {
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    color: '#000',
-    backgroundColor: '#fafafa',
-  },
-  saveButton: {
-    backgroundColor: '#007AFF',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-  },
-  saveButtonDisabled: { opacity: 0.6 },
-  saveButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-});
+function makeStyles(theme: ReturnType<typeof useTheme>['theme']) {
+  return StyleSheet.create({
+    safe: { flex: 1, backgroundColor: theme.background },
+    container: { padding: 24 },
+    title: { fontSize: 28, fontWeight: '700', marginBottom: 24, color: theme.text },
+    sectionTitle: { fontSize: 13, fontWeight: '600', color: theme.subtext, marginBottom: 8, marginTop: 24, textTransform: 'uppercase', letterSpacing: 0.5 },
+    card: {
+      backgroundColor: theme.card,
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 8,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.08,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    label: { fontSize: 13, fontWeight: '600', color: theme.subtext, marginBottom: 6, marginTop: 12 },
+    input: {
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: 8,
+      padding: 12,
+      fontSize: 16,
+      color: theme.text,
+      backgroundColor: theme.inputBackground,
+    },
+    saveButton: {
+      backgroundColor: theme.primary,
+      borderRadius: 12,
+      padding: 16,
+      alignItems: 'center',
+      marginBottom: 4,
+    },
+    saveButtonDisabled: { opacity: 0.6 },
+    saveButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+    themeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    themeRowLabel: { fontSize: 16, color: theme.text, fontWeight: '500' },
+    themeRowValue: { fontSize: 13, color: theme.subtext, marginTop: 2 },
+    themePreviewDot: { width: 28, height: 28, borderRadius: 14, borderWidth: 2, borderColor: theme.border },
+    modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+    modalSheet: {
+      backgroundColor: theme.card,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      padding: 24,
+      paddingBottom: 40,
+    },
+    modalTitle: { fontSize: 18, fontWeight: '700', color: theme.text, marginBottom: 16 },
+    themeOption: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 14,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: theme.border,
+    },
+    themeOptionActive: { backgroundColor: 'transparent' },
+    optionDot: { width: 24, height: 24, borderRadius: 12, marginRight: 14, borderWidth: 1, borderColor: theme.border },
+    optionLabel: { flex: 1, fontSize: 16, color: theme.text },
+    checkmark: { fontSize: 18, fontWeight: '700' },
+  });
+}

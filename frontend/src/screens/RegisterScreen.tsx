@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { register } from '../api/auth';
+import { useTheme } from '../theme/ThemeContext';
 import type { RootStackParamList } from '../../App';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Register'>;
 
 export default function RegisterScreen({ navigation }: Props) {
+  const { theme } = useTheme();
+  const s = makeStyles(theme);
+
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,41 +27,58 @@ export default function RegisterScreen({ navigation }: Props) {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Register</Text>
+    <View style={s.container}>
+      <Text style={s.title}>Register</Text>
       <TextInput
-        style={styles.input}
+        style={s.input}
         placeholder="Username"
+        placeholderTextColor={theme.placeholder}
         autoCapitalize="none"
         value={username}
         onChangeText={setUsername}
       />
       <TextInput
-        style={styles.input}
+        style={s.input}
         placeholder="Email"
+        placeholderTextColor={theme.placeholder}
         autoCapitalize="none"
         keyboardType="email-address"
         value={email}
         onChangeText={setEmail}
       />
       <TextInput
-        style={styles.input}
+        style={s.input}
         placeholder="Password"
+        placeholderTextColor={theme.placeholder}
         secureTextEntry
         value={password}
         onChangeText={setPassword}
       />
-      <Button title="Register" onPress={handleRegister} />
-      <Text style={styles.link} onPress={() => navigation.navigate('Login')}>
+      <TouchableOpacity style={s.button} onPress={handleRegister}>
+        <Text style={s.buttonText}>Register</Text>
+      </TouchableOpacity>
+      <Text style={s.link} onPress={() => navigation.navigate('Login')}>
         Login Here!
       </Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 24 },
-  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 24 },
-  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, marginBottom: 16 },
-  link: { marginTop: 16, textAlign: 'center', color: '#007AFF' },
-});
+function makeStyles(theme: ReturnType<typeof useTheme>['theme']) {
+  return StyleSheet.create({
+    container: { flex: 1, justifyContent: 'center', padding: 24, backgroundColor: theme.background },
+    title: { fontSize: 28, fontWeight: 'bold', marginBottom: 24, color: theme.text },
+    input: {
+      borderWidth: 1,
+      borderColor: theme.border,
+      borderRadius: 8,
+      padding: 12,
+      marginBottom: 16,
+      color: theme.text,
+      backgroundColor: theme.inputBackground,
+    },
+    button: { backgroundColor: theme.primary, borderRadius: 8, padding: 14, alignItems: 'center' },
+    buttonText: { color: '#fff', fontWeight: '600', fontSize: 16 },
+    link: { marginTop: 16, textAlign: 'center', color: theme.primary },
+  });
+}
