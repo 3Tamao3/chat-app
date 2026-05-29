@@ -15,7 +15,7 @@ export default function LoginScreen({ navigation }: Props) {
     try {
       const res = await login(email, password);
       await saveToken(res.data.access_token);
-      navigation.replace('ChatList');
+      navigation.replace('Main');
     } catch {
       Alert.alert('Login failed', 'Invalid email or password');
     }

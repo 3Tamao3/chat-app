@@ -5,17 +5,19 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  Button,
   TextInput,
   Alert,
+  Button,
 } from 'react-native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import client from '../api/client';
-import { getToken, removeToken } from '../utils/storage';
+import { getToken } from '../utils/storage';
 import { jwtDecode } from 'jwt-decode';
+import { decrypt } from '../utils/crypto';
 import type { RootStackParamList } from '../../App';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'ChatList'>;
+type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 type Chat = {
   id: string;
@@ -26,7 +28,8 @@ type Chat = {
 
 type User = { id: string; username: string };
 
-export default function ChatListScreen({ navigation }: Props) {
+export default function ChatListScreen() {
+  const navigation = useNavigation<Nav>();
   const [chats, setChats] = useState<Chat[]>([]);
   const [myId, setMyId] = useState('');
   const [search, setSearch] = useState('');
@@ -44,11 +47,6 @@ export default function ChatListScreen({ navigation }: Props) {
     };
     load();
   }, []);
-
-  const logout = async () => {
-    await removeToken();
-    navigation.replace('Login');
-  };
 
   const handleSearch = async () => {
     if (!search.trim()) return;
@@ -115,13 +113,11 @@ export default function ChatListScreen({ navigation }: Props) {
               }
             >
               <Text style={styles.name}>{other.username}</Text>
-              <Text style={styles.last}>{item.lastMessage ?? 'No messages yet'}</Text>
+              <Text style={styles.last}>{item.lastMessage ? (decrypt(item.lastMessage, item.id) || item.lastMessage) : 'No messages yet'}</Text>
             </TouchableOpacity>
           );
         }}
       />
-
-      <Button title="Logout" onPress={logout} color="red" />
     </View>
   );
 }
