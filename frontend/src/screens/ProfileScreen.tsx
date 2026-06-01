@@ -17,9 +17,11 @@ import { themes, type ThemeName } from '../theme/themes';
 
 const THEME_OPTIONS: { name: ThemeName; label: string; preview: string }[] = [
   { name: 'light',    label: 'Light',     preview: '#f2f2f7' },
-  { name: 'dark',     label: 'Dark',      preview: '#1c1c1e' },
-  { name: 'darkBlue', label: 'Dark Blue', preview: '#17212b' },
-  { name: 'green',    label: 'Green',     preview: '#111b21' },
+  { name: 'dark',     label: 'Dark',      preview: '#161618' },
+  { name: 'darkBlue', label: 'Dark Blue', preview: '#07315c' },
+  { name: 'green',    label: 'Green',     preview: '#15de3d' },
+  { name: 'purple',   label: 'Purple',    preview: '#c811d5' },
+  { name: 'black_and_red',   label: 'Black and Red',    preview: '#000000' },
 ];
 
 export default function ProfileScreen() {
