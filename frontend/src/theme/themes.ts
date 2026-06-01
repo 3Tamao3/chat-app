@@ -1,4 +1,11 @@
-export type ThemeName = "light" | "dark" | "darkBlue" | "green" | "purple" | "black_and_red";
+export type ThemeName =
+  | "light"
+  | "dark"
+  | "darkBlue"
+  | "green"
+  | "purple"
+  | "black_and_red"
+  | "black_and_yellow";
 
 export type Theme = {
   name: ThemeName;
@@ -123,6 +130,24 @@ export const themes: Record<ThemeName, Theme> = {
     inputBackground: "#1a1a1a",
     placeholder: "#ff4d4d",
     bubbleMine: "#ff3333",
+    bubbleTheirs: "#1a1a1a",
+    bubbleTextMine: "#ffffff",
+    bubbleTextTheirs: "#ffffff",
+    statusBar: "light-content",
+  },
+  black_and_yellow: {
+    name: "black_and_yellow",
+    label: "Black and Yellow",
+    background: "#000000",
+    card: "#1a1a1a",
+    text: "#ffffff",
+    subtext: "#ffff4d",
+    border: "#ffff1a",
+    primary: "#cfcf23",
+    tabBar: "#000000",
+    inputBackground: "#1a1a1a",
+    placeholder: "#ffff4d",
+    bubbleMine: "#cfcf23",
     bubbleTheirs: "#1a1a1a",
     bubbleTextMine: "#ffffff",
     bubbleTextTheirs: "#ffffff",

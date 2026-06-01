@@ -22,6 +22,7 @@ const THEME_OPTIONS: { name: ThemeName; label: string; preview: string }[] = [
   { name: 'green',    label: 'Green',     preview: '#15de3d' },
   { name: 'purple',   label: 'Purple',    preview: '#c811d5' },
   { name: 'black_and_red',   label: 'Black and Red',    preview: '#000000' },
+  { name: 'black_and_yellow',   label: 'Black and Yellow',    preview: '#000000' },
 ];
 
 export default function ProfileScreen() {
